@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400..800&display=swap" rel="stylesheet">
+<style>
+body { margin:0; background:#EFE9E1; font-family:'Nunito',sans-serif; }
+a { color:#C4674A; } a:hover { color:#A54F35; }
+@keyframes sipPulse { 0%,100% { transform:scale(1); } 50% { transform:scale(1.06); } }
+</style>
+</helmet>
+<div style="width:390px; height:844px; margin:24px auto; background:#FAF6F0; border-radius:32px; box-shadow:0 12px 40px rgba(60,45,35,0.14); display:flex; flex-direction:column; overflow:hidden; position:relative;" data-screen-label="Enough">
+
+  <sc-if value="{{ showTabs }}" hint-placeholder-val="{{ true }}">
+    <div style="display:flex; flex-direction:column; flex:1; min-height:0;">
+      <div style="padding:24px 24px 0; display:flex; align-items:center; justify-content:space-between; gap:12px;">
+        <div style="display:flex; flex-direction:column; gap:1px;"><div style="font-size:11px; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:oklch(0.55 0.11 40);">Screen Toll</div><div style="font-size:22px; font-weight:800; color:#3A3330;">{{ headerTitle }}</div></div>
+        <div style="display:flex; align-items:center; gap:8px; padding:8px 14px; background:#FFFFFF; border-radius:999px; box-shadow:0 2px 8px rgba(60,45,35,0.06);">
+          <div style="width:10px; height:10px; border-radius:50%; background:oklch(0.72 0.11 150);"></div>
+          <div style="font-size:13px; font-weight:800; color:#3A3330; white-space:nowrap;">{{ budgetPill }}</div>
+        </div>
+      </div>
+      <div style="flex:1; min-height:0; overflow-y:auto;">
+        <sc-if value="{{ tabToday }}" hint-placeholder-val="{{ true }}">
+          <div style="padding:6px 24px 0; font-size:14px; color:#8A7E74; font-weight:600;">{{ todaySubtitle }}</div>
+          <div style="padding:18px 24px 24px; display:flex; flex-direction:column; gap:18px;">
+            <sc-for list="{{ queue }}" as="v" hint-placeholder-count="2">
+              <div style="background:#FFFFFF; border-radius:22px; overflow:hidden; box-shadow:0 3px 14px rgba(60,45,35,0.07); display:flex; flex-direction:column;">
+                <svg width="342" height="150" viewBox="0 0 342 150" style="display:block; width:100%; height:auto;"><rect width="342" height="150" fill="#EDE4D8"></rect><rect y="18" width="342" height="6" fill="#E2D6C6"></rect><rect y="54" width="342" height="6" fill="#E2D6C6"></rect><rect y="90" width="342" height="6" fill="#E2D6C6"></rect><rect y="126" width="342" height="6" fill="#E2D6C6"></rect><text x="171" y="80" text-anchor="middle" font-family="monospace" font-size="12" fill="#9C8D7B">video thumbnail</text></svg>
+                <div style="padding:14px 18px 16px; display:flex; flex-direction:column; gap:8px;">
+                  <div style="font-size:16px; font-weight:800; color:#3A3330; line-height:1.3;">{{ v.title }}</div>
+                  <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+                    <div style="display:flex; flex-direction:column; gap:2px;">
+                      <div style="font-size:12px; color:#8A7E74; font-weight:700;">{{ v.channel }}</div>
+                      <div style="font-size:12px; color:#8A7E74; font-weight:600;">{{ v.costLabel }}</div>
+                    </div>
+                    <div onClick="{{ v.onWatch }}" style="padding:9px 18px; background:oklch(0.72 0.11 40); color:#FFFDFA; border-radius:999px; font-size:14px; font-weight:800; cursor:pointer;" style-hover="background:oklch(0.66 0.11 40)">Watch</div>
+                  </div>
+                </div>
+              </div>
+            </sc-for>
+            <div style="display:flex; align-items:center; gap:10px; padding:14px 18px; background:oklch(0.95 0.03 230); border-radius:18px;">
+              <div style="width:22px; height:22px; border-radius:50%; background:oklch(0.72 0.11 230); flex-shrink:0;"></div>
+              <div style="font-size:13px; font-weight:700; color:oklch(0.4 0.07 230); line-height:1.4;">After each video: a {{ breakMinLabel }}-minute water break. Screen locks, you sip. Deal?</div>
+            </div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ tabChannels }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:6px 24px 0; font-size:14px; color:#8A7E74; font-weight:600;">Only channels you chose. No trending, no rabbit holes.</div>
+          <div style="padding:18px 24px 24px; display:flex; flex-direction:column; gap:12px;">
+            <div style="display:flex; gap:8px;">
+              <input value="{{ channelInput }}" onChange="{{ onChannelInput }}" placeholder="Paste a link or search a channel…" style="flex:1; border:1px solid #E8DFD3; background:#FFFFFF; border-radius:14px; padding:12px 14px; font-family:'Nunito',sans-serif; font-size:14px; font-weight:600; color:#3A3330; outline:none;"></input>
+              <div onClick="{{ onAddChannel }}" style="padding:12px 18px; background:oklch(0.72 0.11 150); color:#FFFDFA; border-radius:14px; font-size:14px; font-weight:800; cursor:pointer; display:flex; align-items:center;">Add</div>
+            </div>
+            <sc-for list="{{ channels }}" as="c" hint-placeholder-count="4">
+              <div style="display:flex; align-items:center; gap:14px; background:#FFFFFF; border-radius:18px; padding:14px 16px; box-shadow:0 2px 8px rgba(60,45,35,0.05);">
+                <div style="width:44px; height:44px; border-radius:50%; background:#EDE4D8; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:16px; font-weight:800; color:#9C8D7B;">{{ c.initial }}</div>
+                <div style="display:flex; flex-direction:column; gap:2px; min-width:0;">
+                  <div style="font-size:15px; font-weight:800; color:#3A3330;">{{ c.name }}</div>
+                  <div style="font-size:12px; color:#8A7E74; font-weight:600;">{{ c.topic }}</div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+        <sc-if value="{{ tabStats }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:6px 24px 0; font-size:14px; color:#8A7E74; font-weight:600;">Your week, honestly.</div>
+          <div style="padding:18px 24px 24px; display:flex; flex-direction:column; gap:16px;">
+            <div style="background:#FFFFFF; border-radius:22px; padding:20px 18px 14px; box-shadow:0 3px 14px rgba(60,45,35,0.07);">
+              <div style="font-size:14px; font-weight:800; color:#3A3330; margin-bottom:14px;">Minutes watched</div>
+              <div style="display:flex; align-items:flex-end; gap:10px; height:100px;">
+                <sc-for list="{{ week }}" as="d" hint-placeholder-count="7">
+                  <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:6px;">
+                    <div style="font-size:11px; font-weight:700; color:#8A7E74;">{{ d.m }}</div>
+                    <div style="width:100%; border-radius:8px 8px 4px 4px; background:{{ d.bg }}; height:{{ d.h }}px;"></div>
+                    <div style="font-size:11px; font-weight:700; color:#8A7E74;">{{ d.label }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+            <div style="display:flex; gap:12px;">
+              <div style="flex:1; background:#FFFFFF; border-radius:18px; padding:16px; box-shadow:0 2px 8px rgba(60,45,35,0.05); display:flex; flex-direction:column; gap:2px;">
+                <div style="font-size:24px; font-weight:800; color:#3A3330;">{{ statVideos }}</div>
+                <div style="font-size:12px; font-weight:700; color:#8A7E74;">videos this week</div>
+              </div>
+              <div style="flex:1; background:#FFFFFF; border-radius:18px; padding:16px; box-shadow:0 2px 8px rgba(60,45,35,0.05); display:flex; flex-direction:column; gap:2px;">
+                <div style="font-size:24px; font-weight:800; color:oklch(0.55 0.11 150);">{{ statBreaks }}</div>
+                <div style="font-size:12px; font-weight:700; color:#8A7E74;">water breaks taken</div>
+              </div>
+              <div style="flex:1; background:#FFFFFF; border-radius:18px; padding:16px; box-shadow:0 2px 8px rgba(60,45,35,0.05); display:flex; flex-direction:column; gap:2px;">
+                <div style="font-size:24px; font-weight:800; color:oklch(0.55 0.11 40);">{{ statUnder }}</div>
+                <div style="font-size:12px; font-weight:700; color:#8A7E74;">days under budget</div>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+      <div style="display:flex; justify-content:space-around; padding:14px 24px 26px; background:#FFFFFF; border-top:1px solid #F0E9E0;">
+        <div onClick="{{ goToday }}" style="display:flex; flex-direction:column; align-items:center; gap:3px; min-width:64px; cursor:pointer;"><div style="width:26px; height:26px; border-radius:9px; background:{{ todayIconBg }};"></div><div style="font-size:12px; font-weight:800; color:{{ todayTxt }};">Today</div></div>
+        <div onClick="{{ goChannels }}" style="display:flex; flex-direction:column; align-items:center; gap:3px; min-width:64px; cursor:pointer;"><div style="width:26px; height:26px; border-radius:9px; background:{{ chIconBg }};"></div><div style="font-size:12px; font-weight:800; color:{{ chTxt }};">Channels</div></div>
+        <div onClick="{{ goStats }}" style="display:flex; flex-direction:column; align-items:center; gap:3px; min-width:64px; cursor:pointer;"><div style="width:26px; height:26px; border-radius:9px; background:{{ stIconBg }};"></div><div style="font-size:12px; font-weight:800; color:{{ stTxt }};">Stats</div></div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isWatch }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex; flex-direction:column; flex:1; min-height:0;" data-screen-label="Watching">
+      <sc-if value="{{ warn80 }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:10px 24px; background:oklch(0.95 0.03 40); display:flex; align-items:center; justify-content:center; gap:8px;">
+          <div style="width:8px; height:8px; border-radius:50%; background:oklch(0.72 0.11 40); animation:sipPulse 1.5s ease-in-out infinite;"></div>
+          <div style="font-size:13px; font-weight:800; color:oklch(0.48 0.1 40);">{{ warnLabel }}</div>
+        </div>
+      </sc-if>
+      <div style="padding:20px 24px 0; display:flex; align-items:center; justify-content:space-between;">
+        <div style="font-size:14px; font-weight:800; color:#8A7E74;">Now watching</div>
+        <div onClick="{{ endEarly }}" style="padding:7px 14px; background:#FFFFFF; border:1px solid #E8DFD3; border-radius:999px; font-size:13px; font-weight:800; color:#8A7E74; cursor:pointer;" style-hover="color:#3A3330">I'm done with this one</div>
+      </div>
+      <div style="margin:16px 24px 0; border-radius:22px; overflow:hidden; box-shadow:0 3px 14px rgba(60,45,35,0.07);">
+        <svg width="342" height="192" viewBox="0 0 342 192" style="display:block; width:100%; height:auto;"><rect width="342" height="192" fill="#4A423C"></rect><rect y="24" width="342" height="6" fill="#57504A"></rect><rect y="72" width="342" height="6" fill="#57504A"></rect><rect y="120" width="342" height="6" fill="#57504A"></rect><rect y="168" width="342" height="6" fill="#57504A"></rect><text x="171" y="100" text-anchor="middle" font-family="monospace" font-size="12" fill="#B5A996">video player</text></svg>
+      </div>
+      <div style="padding:16px 24px 0; display:flex; flex-direction:column; gap:4px;">
+        <div style="font-size:18px; font-weight:800; color:#3A3330; line-height:1.3;">{{ curTitle }}</div>
+        <div style="font-size:13px; font-weight:700; color:#8A7E74;">{{ curChannel }}</div>
+      </div>
+      <div style="padding:18px 24px 0; display:flex; flex-direction:column; gap:8px;">
+        <div style="height:8px; background:#EDE4D8; border-radius:999px; overflow:hidden;">
+          <div style="height:100%; background:oklch(0.72 0.11 40); border-radius:999px; width:{{ progressPct }}%;"></div>
+        </div>
+        <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:700; color:#8A7E74;"><div>{{ posLabel }}</div><div>{{ durLabel }}</div></div>
+      </div>
+      <div style="padding:14px 24px 0; display:flex; align-items:center; justify-content:center; gap:14px;">
+        <div onClick="{{ seekBack }}" style="width:52px; height:52px; border-radius:50%; background:#FFFFFF; box-shadow:0 2px 8px rgba(60,45,35,0.08); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; color:#3A3330; cursor:pointer;">−2m</div>
+        <div onClick="{{ togglePlay }}" style="width:68px; height:68px; border-radius:50%; background:oklch(0.72 0.11 40); box-shadow:0 4px 14px rgba(196,103,74,0.35); display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:800; color:#FFFDFA; cursor:pointer;">{{ playLabel }}</div>
+        <div onClick="{{ seekFwd }}" style="width:52px; height:52px; border-radius:50%; background:#FFFFFF; box-shadow:0 2px 8px rgba(60,45,35,0.08); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; color:#3A3330; cursor:pointer;">+2m</div>
+      </div>
+      <div style="padding:16px 24px 0; display:flex; justify-content:center; gap:8px;">
+        <sc-for list="{{ speeds }}" as="sp" hint-placeholder-count="3">
+          <div onClick="{{ sp.onPick }}" style="padding:7px 16px; border-radius:999px; background:{{ sp.bg }}; color:{{ sp.color }}; font-size:13px; font-weight:800; cursor:pointer;">{{ sp.label }}</div>
+        </sc-for>
+      </div>
+      <div style="margin-top:auto; padding:0 24px 22px; text-align:center; font-size:11px; font-family:monospace; color:#B5A996;">prototype time: 1 real second = 1 minute</div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isBreak }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex; flex-direction:column; flex:1; align-items:center; justify-content:center; gap:20px; background:oklch(0.96 0.02 230); padding:32px;" data-screen-label="Water break">
+      <div style="position:relative; width:170px; height:170px; border-radius:50%; background:conic-gradient(oklch(0.72 0.11 230) {{ breakDeg }}deg, #E2ECF2 {{ breakDeg }}deg); display:flex; align-items:center; justify-content:center;">
+        <div style="width:134px; height:134px; border-radius:50%; background:#FFFFFF; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px;">
+          <div style="font-size:34px; font-weight:800; color:#3A3330;">{{ breakLeftLabel }}</div>
+          <div style="font-size:12px; font-weight:700; color:#8A7E74;">until unlock</div>
+        </div>
+      </div>
+      <div style="display:flex; flex-direction:column; align-items:center; gap:8px; text-align:center;">
+        <div style="font-size:22px; font-weight:800; color:#3A3330;">Water break</div>
+        <div style="font-size:14px; font-weight:600; color:#8A7E74; line-height:1.5; max-width:260px;">Screen's locked — go take a sip. {{ breakNextLabel }}</div>
+      </div>
+      <div style="padding:8px 16px; background:#FFFFFF; border-radius:999px; font-size:12px; font-weight:800; color:oklch(0.5 0.08 230);">No skipping — that was the deal</div>
+      <div style="position:absolute; bottom:22px; font-size:11px; font-family:monospace; color:#9FB4C2;">prototype time: 1 real second = 1 minute</div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isLock }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex; flex-direction:column; flex:1; padding:36px 28px 28px; gap:20px; background:#F4EEE5; overflow-y:auto;" data-screen-label="Locked">
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <div style="font-size:30px; font-weight:800; color:#3A3330; line-height:1.2;">Toll paid for today.</div>
+        <div style="font-size:15px; font-weight:600; color:#8A7E74; line-height:1.5;">{{ lockReasonLabel }} Nicely done — you watched what you came for. Unlocks tomorrow at 8:00 am.</div>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <div style="font-size:14px; font-weight:800; color:#3A3330;">Something else instead?</div>
+        <div style="display:flex; flex-wrap:wrap; gap:8px;">
+          <div style="padding:9px 16px; background:#FFFFFF; border-radius:999px; font-size:13px; font-weight:700; color:#3A3330; box-shadow:0 2px 6px rgba(60,45,35,0.05);">Go for a walk</div>
+          <div style="padding:9px 16px; background:#FFFFFF; border-radius:999px; font-size:13px; font-weight:700; color:#3A3330; box-shadow:0 2px 6px rgba(60,45,35,0.05);">Read a book</div>
+          <div style="padding:9px 16px; background:#FFFFFF; border-radius:999px; font-size:13px; font-weight:700; color:#3A3330; box-shadow:0 2px 6px rgba(60,45,35,0.05);">Stretch a little</div>
+          <div style="padding:9px 16px; background:#FFFFFF; border-radius:999px; font-size:13px; font-weight:700; color:#3A3330; box-shadow:0 2px 6px rgba(60,45,35,0.05);">Drink water</div>
+          <div style="padding:9px 16px; background:#FFFFFF; border-radius:999px; font-size:13px; font-weight:700; color:#3A3330; box-shadow:0 2px 6px rgba(60,45,35,0.05);">Message a friend</div>
+          <div style="padding:9px 16px; background:#FFFFFF; border-radius:999px; font-size:13px; font-weight:700; color:#3A3330; box-shadow:0 2px 6px rgba(60,45,35,0.05);">Just breathe</div>
+        </div>
+      </div>
+      <sc-if value="{{ canExtend }}" hint-placeholder-val="{{ false }}">
+        <div style="margin-top:auto; background:#FFFFFF; border-radius:20px; padding:18px; display:flex; flex-direction:column; gap:10px; box-shadow:0 3px 12px rgba(60,45,35,0.07);">
+          <div style="font-size:14px; font-weight:800; color:#3A3330;">Really need 5 more minutes?</div>
+          <div style="font-size:12px; font-weight:600; color:#8A7E74;">One per day. Tell yourself why first.</div>
+          <textarea value="{{ extReason }}" onChange="{{ onExtReason }}" placeholder="I need this because…" style="border:1px solid #E8DFD3; border-radius:12px; padding:10px 12px; font-family:'Nunito',sans-serif; font-size:13px; font-weight:600; color:#3A3330; resize:none; height:52px; outline:none;"></textarea>
+          <div onClick="{{ onExtend }}" style="padding:11px; text-align:center; background:oklch(0.72 0.11 40); color:#FFFDFA; border-radius:12px; font-size:14px; font-weight:800; cursor:pointer; opacity:{{ extendOpacity }};">Unlock +5 minutes</div>
+        </div>
+      </sc-if>
+      <sc-if value="{{ extUsedNote }}" hint-placeholder-val="{{ false }}">
+        <div style="margin-top:auto; padding:12px 16px; background:oklch(0.95 0.03 40); border-radius:14px; font-size:13px; font-weight:700; color:oklch(0.48 0.1 40); text-align:center;">Emergency extension already used today.</div>
+      </sc-if>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ intentOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute; inset:0; background:rgba(58,51,48,0.45); display:flex; align-items:flex-end; border-radius:32px;">
+      <div style="width:100%; background:#FAF6F0; border-radius:28px 28px 32px 32px; padding:24px 24px 28px; display:flex; flex-direction:column; gap:16px;" data-screen-label="Intent prompt">
+        <div style="display:flex; flex-direction:column; gap:4px;">
+          <div style="font-size:19px; font-weight:800; color:#3A3330;">Before you press play —</div>
+          <div style="font-size:14px; font-weight:600; color:#8A7E74;">what are you here for?</div>
+        </div>
+        <div style="display:flex; flex-wrap:wrap; gap:8px;">
+          <sc-for list="{{ intentChips }}" as="ch" hint-placeholder-count="4">
+            <div onClick="{{ ch.onPick }}" style="padding:9px 16px; border-radius:999px; background:{{ ch.bg }}; color:{{ ch.color }}; font-size:13px; font-weight:700; cursor:pointer;">{{ ch.label }}</div>
+          </sc-for>
+        </div>
+        <textarea value="{{ intentText }}" onChange="{{ onIntentText }}" placeholder="…or type it in your own words" style="border:1px solid #E8DFD3; background:#FFFFFF; border-radius:14px; padding:12px 14px; font-family:'Nunito',sans-serif; font-size:14px; font-weight:600; color:#3A3330; resize:none; height:56px; outline:none;"></textarea>
+        <div style="display:flex; gap:10px;">
+          <div onClick="{{ cancelIntent }}" style="flex:1; padding:13px; text-align:center; background:#FFFFFF; border:1px solid #E8DFD3; border-radius:14px; font-size:14px; font-weight:800; color:#8A7E74; cursor:pointer;">Not now</div>
+          <div onClick="{{ startWatching }}" style="flex:2; padding:13px; text-align:center; background:oklch(0.72 0.11 40); color:#FFFDFA; border-radius:14px; font-size:14px; font-weight:800; cursor:pointer; opacity:{{ startOpacity }};">Start watching</div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:&quot;440px&quot;,&quot;height&quot;:&quot;900px&quot;},&quot;dailyBudgetMin&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:60,&quot;min&quot;:10,&quot;max&quot;:240,&quot;unit&quot;:&quot;min&quot;,&quot;section&quot;:&quot;Limits&quot;},&quot;videosPerSession&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:2,&quot;min&quot;:1,&quot;max&quot;:10,&quot;section&quot;:&quot;Limits&quot;},&quot;breakMinutes&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:5,&quot;min&quot;:1,&quot;max&quot;:10,&quot;unit&quot;:&quot;min&quot;,&quot;section&quot;:&quot;Water break&quot;}}">
+class Component extends DCLogic {
+  state = {
+    tab: 'today', screen: 'home',
+    usedSec: 0, videosWatched: 0, extraSec: 0, extensionUsed: false, extReason: '',
+    intentOpen: false, pendingId: null, intentChip: null, intentText: '',
+    curId: null, pos: 0, playing: false, speed: 1,
+    breakLeft: 0, breaksTaken: 0, lockReason: 'count',
+    channelInput: '',
+    queue: [
+      { id: 1, title: 'How habits actually form — the science', channel: 'Mindfield Lab', dur: 14 },
+      { id: 2, title: 'Slow cooking: one-pot Sunday recipe', channel: "Aran's Kitchen", dur: 22 },
+      { id: 3, title: 'Chess openings you can learn in a day', channel: 'Rook & Rank', dur: 9 },
+      { id: 4, title: 'Why cities are getting quieter', channel: 'Field Notes', dur: 18 }
+    ],
+    channels: [
+      { name: 'Mindfield Lab', topic: 'Science explainers' },
+      { name: "Aran's Kitchen", topic: 'Cooking' },
+      { name: 'Rook & Rank', topic: 'Chess' },
+      { name: 'Field Notes', topic: 'Documentaries' }
+    ]
+  };
+  componentDidMount() { this._t = setInterval(() => this.tick(), 250); }
+  componentWillUnmount() { clearInterval(this._t); }
+  budgetSec() { return (this.props.dailyBudgetMin ?? 60) * 60 + this.state.extraSec; }
+  maxVideos() { return (this.props.videosPerSession ?? 2) + (this.state.extensionUsed ? 1 : 0); }
+  breakMin() { return this.props.breakMinutes ?? 5; }
+  lockNeeded(s) { return s.videosWatched >= this.maxVideos() || s.usedSec >= this.budgetSec(); }
+  tick() {
+    const s = this.state;
+    if (s.screen === 'watch' && s.playing) {
+      const v = s.queue.find(q => q.id === s.curId);
+      if (!v) return;
+      const used = s.usedSec + 15;
+      const pos = s.pos + 15 * s.speed;
+      if (used >= this.budgetSec()) {
+        this.setState({ usedSec: this.budgetSec(), playing: false, curId: null, pos: 0, screen: 'lock', lockReason: 'time' });
+      } else if (pos >= v.dur * 60) {
+        this.finishVideo(v, used);
+      } else {
+        this.setState({ pos, usedSec: used });
+      }
+    } else if (s.screen === 'break') {
+      const left = s.breakLeft - 15;
+      if (left <= 0) {
+        const locked = this.lockNeeded(s);
+        this.setState({ breakLeft: 0, screen: locked ? 'lock' : 'home', lockReason: s.usedSec >= this.budgetSec() ? 'time' : 'count' });
+      } else this.setState({ breakLeft: left });
+    }
+  }
+  finishVideo(v, used) {
+    this.setState(s => ({
+      usedSec: used ?? s.usedSec, pos: 0, playing: false, curId: null,
+      videosWatched: s.videosWatched + 1, breaksTaken: s.breaksTaken + 1,
+      queue: s.queue.filter(q => q.id !== v.id),
+      screen: 'break', breakLeft: this.breakMin() * 60,
+      intentChip: null, intentText: ''
+    }));
+  }
+  fmt(sec) { const m = Math.floor(sec / 60), ss = Math.floor(sec % 60); return m + ':' + String(ss).padStart(2, '0'); }
+  renderVals() {
+    const s = this.state, budget = this.budgetSec();
+    const minutesLeft = Math.max(0, Math.ceil((budget - s.usedSec) / 60));
+    const videosLeft = Math.max(0, this.maxVideos() - s.videosWatched);
+    const cur = s.queue.find(q => q.id === s.curId);
+    const intentReady = !!(s.intentChip || s.intentText.trim());
+    const chipLabels = ['Learn something specific', 'Unwind for a bit', 'Cook along', 'Catch up on a channel'];
+    const weekData = [
+      { label: 'Mon', m: 34 }, { label: 'Tue', m: 52 }, { label: 'Wed', m: 18 },
+      { label: 'Thu', m: 60 }, { label: 'Fri', m: 41 }, { label: 'Sat', m: 25 }
+    ];
+    const todayMin = Math.round(s.usedSec / 60);
+    const week = weekData.map(d => ({ ...d, h: Math.max(4, Math.round(d.m * 1.1)), bg: '#E8DFD3' }));
+    week.push({ label: 'Sun', m: todayMin, h: Math.max(4, Math.round(todayMin * 1.1)), bg: 'oklch(0.72 0.11 40)' });
+    const headerByTab = { today: "Today's picks", channels: 'Your channels', stats: 'Your week' };
+    return {
+      showTabs: s.screen === 'home', isWatch: s.screen === 'watch', isBreak: s.screen === 'break', isLock: s.screen === 'lock',
+      tabToday: s.tab === 'today', tabChannels: s.tab === 'channels', tabStats: s.tab === 'stats',
+      headerTitle: headerByTab[s.tab],
+      budgetPill: minutesLeft + ' min · ' + videosLeft + ' left',
+      todaySubtitle: s.queue.length ? s.queue.length + " picks in your queue. That's the whole feed." : 'Queue is empty — add from your channels.',
+      breakMinLabel: this.breakMin(),
+      queue: s.queue.map(v => ({
+        ...v,
+        costLabel: v.dur <= minutesLeft ? 'Uses ' + v.dur + ' min of your budget' : 'Longer than the ' + minutesLeft + ' min you have left',
+        onWatch: () => this.setState({ intentOpen: true, pendingId: v.id, intentChip: null, intentText: '' })
+      })),
+      channels: s.channels.map(c => ({ ...c, initial: c.name.charAt(0) })),
+      channelInput: s.channelInput,
+      onChannelInput: e => this.setState({ channelInput: e.target.value }),
+      onAddChannel: () => {
+        const t = s.channelInput.trim();
+        if (!t) return;
+        const name = t.startsWith('http') ? 'Linked channel' : t;
+        this.setState({ channels: [{ name, topic: 'Added just now' }, ...s.channels], channelInput: '' });
+      },
+      week, statVideos: 9 + s.videosWatched, statBreaks: 9 + s.breaksTaken, statUnder: 5,
+      goToday: () => this.setState({ tab: 'today' }),
+      goChannels: () => this.setState({ tab: 'channels' }),
+      goStats: () => this.setState({ tab: 'stats' }),
+      todayIconBg: s.tab === 'today' ? 'oklch(0.72 0.11 40)' : '#E8DFD3', todayTxt: s.tab === 'today' ? '#3A3330' : '#8A7E74',
+      chIconBg: s.tab === 'channels' ? 'oklch(0.72 0.11 40)' : '#E8DFD3', chTxt: s.tab === 'channels' ? '#3A3330' : '#8A7E74',
+      stIconBg: s.tab === 'stats' ? 'oklch(0.72 0.11 40)' : '#E8DFD3', stTxt: s.tab === 'stats' ? '#3A3330' : '#8A7E74',
+      intentOpen: s.intentOpen,
+      intentChips: chipLabels.map(label => ({
+        label,
+        bg: s.intentChip === label ? 'oklch(0.72 0.11 150)' : '#FFFFFF',
+        color: s.intentChip === label ? '#FFFDFA' : '#3A3330',
+        onPick: () => this.setState({ intentChip: s.intentChip === label ? null : label })
+      })),
+      intentText: s.intentText,
+      onIntentText: e => this.setState({ intentText: e.target.value }),
+      cancelIntent: () => this.setState({ intentOpen: false, pendingId: null }),
+      startOpacity: intentReady ? 1 : 0.45,
+      startWatching: () => {
+        if (!intentReady) return;
+        this.setState({ intentOpen: false, screen: 'watch', curId: s.pendingId, pos: 0, playing: true, speed: 1 });
+      },
+      curTitle: cur ? cur.title : '', curChannel: cur ? cur.channel : '',
+      progressPct: cur ? Math.min(100, (s.pos / (cur.dur * 60)) * 100) : 0,
+      posLabel: this.fmt(s.pos), durLabel: cur ? this.fmt(cur.dur * 60) : '0:00',
+      playLabel: s.playing ? 'Pause' : 'Play',
+      togglePlay: () => this.setState({ playing: !s.playing }),
+      seekBack: () => this.setState({ pos: Math.max(0, s.pos - 120) }),
+      seekFwd: () => cur && this.setState({ pos: Math.min(cur.dur * 60 - 1, s.pos + 120) }),
+      speeds: [1, 1.5, 2].map(sp => ({
+        label: sp + 'x',
+        bg: s.speed === sp ? 'oklch(0.72 0.11 40)' : '#FFFFFF',
+        color: s.speed === sp ? '#FFFDFA' : '#8A7E74',
+        onPick: () => this.setState({ speed: sp })
+      })),
+      endEarly: () => cur && this.finishVideo(cur),
+      warn80: s.usedSec >= budget * 0.8,
+      warnLabel: minutesLeft + ' min left today — wrap up soon',
+      breakDeg: this.breakMin() > 0 ? 360 * (1 - s.breakLeft / (this.breakMin() * 60)) : 360,
+      breakLeftLabel: this.fmt(s.breakLeft),
+      breakNextLabel: this.lockNeeded(s) ? 'That was your last one for today.' : "Then you're set for your next pick.",
+      lockReasonLabel: s.lockReason === 'time' ? 'Your ' + (this.props.dailyBudgetMin ?? 60) + ' minutes are used up.' : "You've watched your " + this.maxVideos() + ' videos.',
+      canExtend: !s.extensionUsed,
+      extUsedNote: s.extensionUsed,
+      extReason: s.extReason,
+      onExtReason: e => this.setState({ extReason: e.target.value }),
+      extendOpacity: s.extReason.trim() ? 1 : 0.45,
+      onExtend: () => {
+        if (!s.extReason.trim()) return;
+        this.setState({ extensionUsed: true, extraSec: s.extraSec + 300, screen: 'home', tab: 'today' });
+      }
+    };
+  }
+}
+</script>
+<template id="__bundler_thumbnail"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#C4674A"/><g fill="#FAF6F0"><rect x="30" y="34" width="40" height="26" rx="5"/><path d="M46 42l12 5-12 5z" fill="#C4674A"/><rect x="42" y="64" width="16" height="4" rx="2"/></g></svg></template></body>
+</html>
