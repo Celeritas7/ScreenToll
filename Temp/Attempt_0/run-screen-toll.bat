@@ -36,7 +36,7 @@ if not defined PY (
   echo.
   echo Could not find Python automatically.
   echo Open "Anaconda Prompt", cd to this folder, and run:
-  echo     python -m http.server 5190 --directory "%ROOT%"
+  echo     python -m http.server 5173 --directory "%ROOT%"
   echo.
   pause & goto :eof
 )
@@ -44,12 +44,12 @@ if not defined PY (
 echo.
 echo   Screen Toll - local server
 echo   Python:  %PY%
-echo   Serving: %ROOT%    Open: http://localhost:5190/
+echo   Serving: %ROOT%    Open: http://localhost:5173/
 echo   (Close this window to stop.)
 echo.
 
-start "" "http://localhost:5190/"
-"%PY%" -m http.server 5190 --directory "%ROOT%"
+start "" "http://localhost:5173/"
+"%PY%" -m http.server 5173 --directory "%ROOT%"
 
 echo.
 echo Server stopped.
