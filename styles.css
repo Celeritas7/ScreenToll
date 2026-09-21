@@ -1,0 +1,75 @@
+/* tokens/fonts.css */
+/* Nunito is the source's own webfont (loaded from Google Fonts in screen-toll-src.html) */
+@import url("https://fonts.googleapis.com/css2?family=Nunito:wght@400..800&display=swap");
+
+/* tokens/colors.css */
+:root{
+/* surfaces */
+--bg-page:#EFE9E1; --surface-app:#FAF6F0; --surface-card:#FFFFFF;
+--surface-thumb:#EDE4D8; --surface-thumb-line:#E2D6C6;
+--surface-player:#4A423C; --surface-player-line:#57504A;
+--surface-lock:#F4EEE5;
+--scrim:rgba(58,51,48,0.45);
+/* text */
+--text-strong:#3A3330; --text-muted:#8A7E74; --text-faint:#9C8D7B; --text-faint-warm:#B5A996;
+--text-on-accent:#FFFDFA;
+/* borders */
+--border-soft:#E8DFD3; --border-hairline:#F0E9E0;
+/* terracotta — primary action */
+--accent:oklch(0.72 0.11 40); --accent-hover:oklch(0.66 0.11 40);
+--accent-text:oklch(0.55 0.11 40); --accent-text-deep:oklch(0.48 0.1 40);
+--accent-tint:oklch(0.95 0.03 40);
+--accent-hex:#C4674A; --accent-hover-hex:#A54F35;
+/* sage — positive / add / selected */
+--go:oklch(0.72 0.11 150); --go-text:oklch(0.55 0.11 150);
+/* calm blue — breaks, tips, rest */
+--calm:oklch(0.72 0.11 230); --calm-text:oklch(0.5 0.08 230); --calm-text-deep:oklch(0.4 0.07 230);
+--calm-tint:oklch(0.95 0.03 230); --calm-bg:oklch(0.96 0.02 230);
+--calm-track:#E2ECF2; --calm-faint:#9FB4C2;
+/* semantic aliases */
+--surface-page:var(--bg-page); --text-body:var(--text-strong); --text-secondary:var(--text-muted);
+--action-primary:var(--accent); --action-primary-hover:var(--accent-hover);
+--track:#EDE4D8;
+}
+a{color:var(--accent-hex)} a:hover{color:var(--accent-hover-hex)}
+
+/* tokens/typography.css */
+:root{
+--font-body:'Nunito',sans-serif;
+--font-mono:monospace;
+/* weights: hierarchy is carried by weight, not family */
+--w-body:600; /* @kind font */ --w-label:700; /* @kind font */ --w-heading:800; /* @kind font */
+/* size scale (px, exact from source) */
+--fs-overline:11px; --fs-meta:12px; --fs-label:13px; --fs-body:14px; --fs-row:15px;
+--fs-card-title:16px; --fs-watch-title:18px; --fs-sheet-title:19px;
+--fs-screen-title:22px; --fs-stat:24px; --fs-lock-title:30px; --fs-timer:34px;
+/* overline treatment */
+--overline-tracking:0.08em;
+--lh-tight:1.2; /* @kind font */ --lh-title:1.3; /* @kind font */ --lh-body:1.4; /* @kind font */ --lh-relaxed:1.5; /* @kind font */
+}
+body{font-family:var(--font-body)}
+
+/* tokens/spacing.css */
+:root{
+/* radii — exact, never snapped */
+--r-pill:999px; --r-phone:32px; --r-sheet:28px; --r-card:22px; --r-tile:18px;
+--r-field:14px; --r-btn:12px; --r-tabicon:9px; --r-track:8px;
+/* spacing */
+--gutter:24px; --pad-card:18px; --pad-tile:16px;
+--gap-section:18px; --gap-card:16px; --gap-tile:12px; --gap-chip:8px;
+}
+
+/* tokens/effects.css */
+:root{
+/* warm brown-tinted shadows, never gray */
+--shadow-rest:0 2px 8px rgba(60,45,35,0.06);
+--shadow-chip:0 2px 6px rgba(60,45,35,0.05);
+--shadow-card:0 3px 14px rgba(60,45,35,0.07);
+--shadow-panel:0 3px 12px rgba(60,45,35,0.07);
+--shadow-phone:0 12px 40px rgba(60,45,35,0.14);
+--shadow-accent-glow:0 4px 14px rgba(196,103,74,0.35);
+/* states */
+--opacity-disabled:0.45; /* @kind other */
+}
+@keyframes sipPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+

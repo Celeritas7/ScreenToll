@@ -1,13 +1,13 @@
+<!-- @dsCard group="Screen Toll App" viewport="440x900" name="Screen Toll app" subtitle="4 switchable themes — real YouTube, real time, saved locally" -->
 <!DOCTYPE html>
-<html><head><meta charset="utf-8"><title>ScreenToll</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="stylesheet" href="./styles.css">
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../styles.css">
 <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
-<script src="./_ds_bundle.js"></script>
+<script src="../../_ds_bundle.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
-<script src="./config.js"></script>
+<script src="config.js"></script>
 <style>body{margin:0;background:#EFE9E1}body:has([data-theme="plaza"]){background:#0B0906}
 [data-theme="plaza"]{--bg-page:#0B0906;--surface-app:#16130E;--surface-card:#221E17;--surface-thumb:#2A2620;--surface-thumb-line:#3A3528;--surface-lock:#16130E;--scrim:rgba(0,0,0,.65);--text-strong:#F5F1E8;--text-muted:#8C8574;--text-faint:#6E6757;--text-faint-warm:#5A5344;--text-on-accent:#191509;--border-soft:#2E2A22;--border-hairline:#262218;--accent:#F0B429;--accent-hover:#D89E1B;--accent-text:#F0B429;--accent-text-deep:#F5C95E;--accent-tint:#2A230F;--accent-hex:#F0B429;--accent-hover-hex:#D89E1B;--go:#2E8B5F;--go-text:#5FBF8A;--calm:#2E8B5F;--calm-bg:#101A14;--calm-text:#5FBF8A;--calm-text-deep:#8FD7AF;--calm-tint:#14231A;--calm-track:#1E2E24;--calm-faint:#3E5A4A;--track:#2A2620;--shadow-rest:0 2px 8px rgba(0,0,0,.4);--shadow-chip:0 2px 6px rgba(0,0,0,.35);--shadow-card:0 4px 16px rgba(0,0,0,.45);--shadow-panel:0 4px 14px rgba(0,0,0,.45);--shadow-phone:0 20px 50px rgba(0,0,0,.55);--shadow-accent-glow:0 4px 14px rgba(240,180,41,.35)}
 [data-theme="plaza"] a{color:#F0B429}[data-theme="plaza"] a:hover{color:#F5C95E}
@@ -76,16 +76,6 @@ const GoogleMark = () => <svg width="17" height="17" viewBox="0 0 48 48" style={
   <path fill="#FBBC05" d="M10.4 28.7c-.5-1.5-.8-3-.8-4.7s.3-3.2.8-4.7l-7.8-6.1C.9 16.4 0 20.1 0 24s.9 7.6 2.6 10.8l7.8-6.1z"></path>
   <path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.9l-7.6-5.9c-2.1 1.4-4.8 2.3-8.3 2.3-6.3 0-11.7-3.7-13.6-9.8l-7.8 6.1C6.5 42.6 14.6 48 24 48z"></path>
 </svg>;
-function LibraryMissing({ theme }) {
-  return <Shell theme={theme}><div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 14, padding: '28px 24px' }} data-screen-label="Library missing">
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10 }}>
-      <PlazaSign line1="SCREEN TOLL PLAZA" line2="No line to base ⟶" />
-      <LedBadge label="LANE STATUS" value="OFFLINE" blink={true} />
-    </div>
-    <div style={{ fontSize: 13, fontWeight: 600, color: T.muted, lineHeight: 1.6 }}>The Supabase library did not load, so sign-in and cloud sync are unavailable. Usually no internet, or a network that blocks <b style={{ color: T.strong }}>cdn.jsdelivr.net</b>.</div>
-    <div style={{ fontSize: 12, fontWeight: 600, color: T.muted, lineHeight: 1.6 }}>Reload once connected. To work offline permanently, save <b style={{ color: T.strong }}>supabase.js</b> next to index.html and change its script tag to <b style={{ color: T.strong }}>./supabase.js</b>.</div>
-  </div></Shell>;
-}
 function NotConfigured({ theme }) {
   return <Shell theme={theme}><div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 14, padding: '28px 24px' }} data-screen-label="Not configured">
     <PlazaSign line1="SCREEN TOLL PLAZA" line2="Booth offline ⟶" />
@@ -174,11 +164,8 @@ function App({ sb, session, access, onSignOut }) {
       const { data, error } = await sb.from(STATE_TABLE).select('data').eq('user_id', session.user.id).maybeSingle();
       if (dead) return;
       if (error) { setSync('error'); cloudReady.current = true; return; }
-      const cloud = data && data.data ? hydrate(data.data) : null;
-      const cloudHas = cloud && (cloud.queue.length || cloud.essentials.length || cloud.channels.length || cloud.playlists.length);
+      if (data && data.data) setSt(s => ({ ...s, ...hydrate(data.data) }));
       cloudReady.current = true;
-      if (cloudHas) setSt(s => ({ ...s, ...cloud }));
-      else setSt(s => ({ ...s, _pushNow: Date.now() }));
       setSync('synced');
     })();
     return () => { dead = true; };
@@ -192,7 +179,7 @@ function App({ sb, session, access, onSignOut }) {
       const { error } = await sb.from(STATE_TABLE).upsert({ user_id: session.user.id, data: snapshot(st), updated_at: new Date().toISOString() });
       setSync(error ? 'error' : 'synced');
     }, 1200);
-  }, [st.queue, st.essentials, st.channels, st.playlists, st.folderIcons, st.apiKey, st.theme, st.usedSec, st.videosWatched, st.extraSec, st.extensionUsed, st.breaksTaken, st._pushNow]);
+  }, [st.queue, st.essentials, st.channels, st.playlists, st.folderIcons, st.apiKey, st.theme, st.usedSec, st.videosWatched, st.extraSec, st.extensionUsed, st.breaksTaken]);
   React.useEffect(() => {
     const t = setInterval(() => setSt(s => {
       const bud = BUDGET_MIN * 60 + s.extraSec;
@@ -682,7 +669,6 @@ function Root() {
   };
   const waiting = txt => <Shell theme={theme}><div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'monospace', fontSize: 12, fontWeight: 800, letterSpacing: '0.1em', color: 'var(--text-muted)' }}>{txt}</div></Shell>;
   if (!cfgReady) return <NotConfigured theme={theme} />;
-  if (!window.supabase) return <LibraryMissing theme={theme} />;
   if (session === undefined) return waiting('OPENING THE BOOTH\u2026');
   if (!session) return <LoginScreen sb={sb} theme={theme} />;
   if (access === undefined) return waiting('CHECKING THE LIST\u2026');
