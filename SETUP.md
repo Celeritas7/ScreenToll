@@ -4,13 +4,16 @@ Keys live in **`config.js`**, committed to your GitHub repo. Sign-in is **Google
 
 ## Files to deploy
 
-Put these four in the same folder (repo root, or `/docs` for GitHub Pages):
+Keep this layout (repo root, or `/docs` for GitHub Pages):
 
 ```
 index.html
-config.js      ← the only file you edit
-styles.css
-_ds_bundle.js
+sw.js
+assets/
+  config.js    ← the only file you edit
+  styles.css
+  ds-bundle.js
+  manifest.webmanifest, icon-192.png, icon-512.png
 ```
 
 ## 1. Fill in config.js

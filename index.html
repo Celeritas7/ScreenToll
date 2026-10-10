@@ -17,7 +17,8 @@ a{color:var(--accent-hex)}a:hover{color:var(--accent-hover-hex)}
 @keyframes gateLift{0%,20%{transform:rotate(0)}100%{transform:rotate(-58deg)}}
 @keyframes stampIn{0%{transform:scale(2.4) rotate(-14deg);opacity:0}60%{transform:scale(.95) rotate(-14deg);opacity:1}100%{transform:scale(1) rotate(-14deg);opacity:1}}
 @keyframes printDown{0%{clip-path:inset(0 0 100% 0);transform:translateY(-14px)}100%{clip-path:inset(0 0 0 0);transform:translateY(0)}}
-@keyframes blinkLed{0%,100%{opacity:1}50%{opacity:.35}}</style>
+@keyframes blinkLed{0%,100%{opacity:1}50%{opacity:.35}}
+@media (max-width:480px){.st-shell{width:100%!important;height:100vh!important;height:100dvh!important;margin:0!important;border-radius:0!important;box-shadow:none!important}}</style>
 </head><body>
 <div id="root"></div>
 <template id="__bundler_thumbnail"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><rect width="120" height="120" fill="#C4674A"></rect><text x="60" y="74" text-anchor="middle" font-family="sans-serif" font-size="40" font-weight="800" fill="#FAF6F0">ST</text></svg></template>
@@ -33,32 +34,52 @@ const THEMES = {
 };
 const STRIPE = 'repeating-linear-gradient(-45deg,#F0B429 0 14px,#22201B 14px 28px)';
 const EMOJIS = ['📁', '🍳', '📚', '🧠', '💪', '🎵', '🎬', '🎮', '✈️', '💰'];
-const todayKey = new Date().toISOString().slice(0, 10);
+const MAX_TICK_GAP = 90, HISTORY_DAYS = 90;
+const CFG = window.SCREENTOLL_CONFIG || {};
+// Local calendar day (not UTC), so the budget resets at the user's own midnight.
+const dayKey = (d = new Date()) => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+let todayKey = dayKey();
 const vidFrom = u => { const m = String(u).match(/(?:youtu\.be\/|[?&]v=|shorts\/|embed\/|live\/)([\w-]{11})/); return m ? m[1] : null; };
 const listFrom = u => { const m = String(u).match(/[?&]list=([\w-]+)/); return m ? m[1] : null; };
+const freshUsage = () => ({ usedSec: 0, videosWatched: 0, extraSec: 0, extensionUsed: false, breaksTaken: 0 });
+const hydrate = d => {
+  const u = (d.usage && d.usage.date === todayKey) ? d.usage : {};
+  return { queue: d.queue || [], essentials: d.essentials || [], channels: d.channels || [], playlists: d.playlists || [], folderIcons: d.folderIcons || {}, history: d.history || {}, apiKey: CFG.YOUTUBE_API_KEY || d.apiKey || '', theme: THEMES[d.theme] ? d.theme : 'plaza', usedSec: u.usedSec || 0, videosWatched: u.videosWatched || 0, extraSec: u.extraSec || 0, extensionUsed: !!u.extensionUsed, breaksTaken: u.breaksTaken || 0, breakEndsAt: (d.usage && d.usage.breakEndsAt) || 0 };
+};
 function loadStore() {
-  try {
-    const d = JSON.parse(localStorage.getItem(LS)) || {};
-    const u = (d.usage && d.usage.date === todayKey) ? d.usage : { date: todayKey, usedSec: 0, videosWatched: 0, extraSec: 0, extensionUsed: false, breaksTaken: 0 };
-    return { queue: d.queue || [], essentials: d.essentials || [], channels: d.channels || [], playlists: d.playlists || [], folderIcons: d.folderIcons || {}, history: d.history || {}, apiKey: CFG.YOUTUBE_API_KEY || d.apiKey || '', theme: THEMES[d.theme] ? d.theme : 'plaza', ...u };
-  } catch (e) { return { queue: [], essentials: [], channels: [], playlists: [], folderIcons: {}, history: {}, apiKey: CFG.YOUTUBE_API_KEY || '', theme: 'plaza', usedSec: 0, videosWatched: 0, extraSec: 0, extensionUsed: false, breaksTaken: 0 }; }
+  try { return hydrate(JSON.parse(localStorage.getItem(LS)) || {}); } catch (e) { return hydrate({}); }
 }
+const pruneHistory = h => { const cut = dayKey(new Date(Date.now() - HISTORY_DAYS * 864e5)); return Object.fromEntries(Object.entries(h).filter(([k]) => k >= cut)); };
 const snapshot = st => ({
   queue: st.queue, essentials: st.essentials, channels: st.channels, playlists: st.playlists, folderIcons: st.folderIcons, apiKey: st.apiKey, theme: st.theme,
-  usage: { date: todayKey, usedSec: st.usedSec, videosWatched: st.videosWatched, extraSec: st.extraSec, extensionUsed: st.extensionUsed, breaksTaken: st.breaksTaken },
-  history: { ...st.history, [todayKey]: { min: Math.round(st.usedSec / 60), vids: st.videosWatched, breaks: st.breaksTaken } }
+  usage: { date: todayKey, usedSec: st.usedSec, videosWatched: st.videosWatched, extraSec: st.extraSec, extensionUsed: st.extensionUsed, breaksTaken: st.breaksTaken, breakEndsAt: st.breakEndsAt },
+  history: pruneHistory({ ...st.history, [todayKey]: { min: Math.round(st.usedSec / 60), vids: st.videosWatched, breaks: st.breaksTaken } })
 });
-const hydrate = d => {
-  const u = (d.usage && d.usage.date === todayKey) ? d.usage : { usedSec: 0, videosWatched: 0, extraSec: 0, extensionUsed: false, breaksTaken: 0 };
-  return { queue: d.queue || [], essentials: d.essentials || [], channels: d.channels || [], playlists: d.playlists || [], folderIcons: d.folderIcons || {}, history: d.history || {}, apiKey: CFG.YOUTUBE_API_KEY || d.apiKey || '', theme: THEMES[d.theme] ? d.theme : 'plaza', usedSec: u.usedSec || 0, videosWatched: u.videosWatched || 0, extraSec: u.extraSec || 0, extensionUsed: !!u.extensionUsed, breaksTaken: u.breaksTaken || 0 };
+// Combine this device's state with the cloud row. Usage counters take the larger value so minutes
+// recorded on either side are never lost; lists come from the cloud when it has any.
+const mergeCloud = (s, cloud, cloudHas) => {
+  const history = { ...cloud.history };
+  Object.entries(s.history).forEach(([k, h]) => { if (!history[k] || (h.min || 0) > (history[k].min || 0)) history[k] = h; });
+  const breakEndsAt = Math.max(s.breakEndsAt || 0, cloud.breakEndsAt || 0);
+  const left = Math.ceil((breakEndsAt - Date.now()) / 1000);
+  return { ...s,
+    ...(cloudHas ? { queue: cloud.queue, essentials: cloud.essentials, channels: cloud.channels, playlists: cloud.playlists, folderIcons: cloud.folderIcons, apiKey: cloud.apiKey, theme: cloud.theme } : {}),
+    history, breakEndsAt,
+    usedSec: Math.max(s.usedSec, cloud.usedSec), videosWatched: Math.max(s.videosWatched, cloud.videosWatched), extraSec: Math.max(s.extraSec, cloud.extraSec),
+    extensionUsed: s.extensionUsed || cloud.extensionUsed, breaksTaken: Math.max(s.breaksTaken, cloud.breaksTaken),
+    ...(left > 0 && s.screen === 'home' ? { screen: 'break', breakLeft: left } : {}),
+    _pushNow: Date.now() };
 };
-const CFG = window.SCREENTOLL_CONFIG || {};
+// Midnight while the app is open: file yesterday into history and start a fresh day.
+const rollover = (s, oldKey) => ({ ...s, ...freshUsage(), extReason: '',
+  history: { ...s.history, [oldKey]: { min: Math.round(s.usedSec / 60), vids: s.videosWatched, breaks: s.breaksTaken } },
+  screen: s.screen === 'lock' ? 'home' : s.screen });
 const ROLES_TABLE = CFG.ROLES_TABLE || 'authentication_mode_user_roles';
 const STATE_TABLE = CFG.STATE_TABLE || 'screen_toll_state';
 const cfgReady = !!(CFG.SUPABASE_URL && CFG.SUPABASE_ANON_KEY);
 const redirectHere = () => location.href.split('#')[0].split('?')[0];
 function Shell({ children, theme }) {
-  return <div data-theme={theme} style={{ width: 390, height: 'min(844px, calc(100vh - 48px))', margin: '24px auto', background: 'var(--surface-app)', borderRadius: 32, boxShadow: 'var(--shadow-phone)', display: 'flex', flexDirection: 'column', overflow: 'hidden', position: 'relative', fontFamily: T.body }}>{children}</div>;
+  return <div className="st-shell" data-theme={theme} style={{ width: 390, height: 'min(844px, calc(100vh - 48px))', margin: '24px auto', background: 'var(--surface-app)', borderRadius: 32, boxShadow: 'var(--shadow-phone)', display: 'flex', flexDirection: 'column', overflow: 'hidden', position: 'relative', fontFamily: T.body }}>{children}</div>;
 }
 function PlazaSign({ line1, line2 }) {
   return <div style={{ background: '#1E6B4F', border: '2px solid #F5F1E8', borderRadius: 10, padding: '9px 14px', color: '#fff', alignSelf: 'flex-start' }}>
@@ -156,31 +177,43 @@ function LoginScreen({ sb, theme }) {
   </div></Shell>;
 }
 function App({ sb, session, access, onSignOut }) {
-  const [st, setSt] = React.useState(() => ({
-    tab: 'today', screen: 'home', ...loadStore(),
-    videoInput: '', adding: false, addErr: '', channelInput: '', keyInput: '',
-    intentOpen: false, pendingId: null, intentChip: null, intentText: '',
-    essOpen: false, essPendingId: null, essReason: '',
-    folderOpen: false, folderTarget: null, folderInput: '', openFolder: null, folderEmoji: '📁', openPlaylist: null, iconOpen: false, iconTarget: null, plOpen: false, plTarget: null, plInput: '',
-    curId: null, sessionSec: 0, breakLeft: 0, extReason: '', lockReason: 'count'
-  }));
+  const [st, setSt] = React.useState(() => {
+    const stored = loadStore();
+    const breakLeft = Math.max(0, Math.ceil((stored.breakEndsAt - Date.now()) / 1000));
+    return {
+      tab: 'today', ...stored,
+      videoInput: '', adding: false, addErr: '', channelInput: '', keyInput: '',
+      intentOpen: false, pendingId: null, intentChip: null, intentText: '',
+      essOpen: false, essPendingId: null, essReason: '',
+      folderOpen: false, folderTarget: null, folderInput: '', openFolder: null, folderEmoji: '📁', openPlaylist: null, iconOpen: false, iconTarget: null, plOpen: false, plTarget: null, plInput: '',
+      curId: null, sessionSec: 0, extReason: '', lockReason: 'count',
+      // A break survives reloads: it ends at a stored timestamp, not when the page is refreshed.
+      screen: breakLeft > 0 ? 'break' : 'home', breakLeft
+    };
+  });
   const TH = THEMES[st.theme] || THEMES.plaza;
   const budgetSec = BUDGET_MIN * 60 + st.extraSec;
   const maxVideos = MAX_VIDEOS + (st.extensionUsed ? 1 : 0);
   const cloudReady = React.useRef(false);
   const pushT = React.useRef(null);
+  const latest = React.useRef(st);
+  latest.current = st;
   const [sync, setSync] = React.useState('loading');
+  const flush = async () => {
+    clearTimeout(pushT.current); pushT.current = null;
+    const { error } = await sb.from(STATE_TABLE).upsert({ user_id: session.user.id, data: snapshot(latest.current), updated_at: new Date().toISOString() });
+    setSync(error ? 'error' : 'synced');
+  };
   React.useEffect(() => {
     let dead = false;
     (async () => {
       const { data, error } = await sb.from(STATE_TABLE).select('data').eq('user_id', session.user.id).maybeSingle();
       if (dead) return;
       if (error) { setSync('error'); cloudReady.current = true; return; }
-      const cloud = data && data.data ? hydrate(data.data) : null;
-      const cloudHas = cloud && (cloud.queue.length || cloud.essentials.length || cloud.channels.length || cloud.playlists.length);
+      const cloud = hydrate((data && data.data) || {});
+      const cloudHas = !!(cloud.queue.length || cloud.essentials.length || cloud.channels.length || cloud.playlists.length);
       cloudReady.current = true;
-      if (cloudHas) setSt(s => ({ ...s, ...cloud }));
-      else setSt(s => ({ ...s, _pushNow: Date.now() }));
+      setSt(s => mergeCloud(s, cloud, cloudHas));
       setSync('synced');
     })();
     return () => { dead = true; };
@@ -189,31 +222,45 @@ function App({ sb, session, access, onSignOut }) {
     localStorage.setItem(LS, JSON.stringify(snapshot(st)));
     if (!cloudReady.current) return;
     setSync('saving');
+    // While watching, usage changes every second: save every 15s instead of waiting for it to settle.
+    if (pushT.current && st.screen === 'watch') return;
     clearTimeout(pushT.current);
-    pushT.current = setTimeout(async () => {
-      const { error } = await sb.from(STATE_TABLE).upsert({ user_id: session.user.id, data: snapshot(st), updated_at: new Date().toISOString() });
-      setSync(error ? 'error' : 'synced');
-    }, 1200);
-  }, [st.queue, st.essentials, st.channels, st.playlists, st.folderIcons, st.apiKey, st.theme, st.usedSec, st.videosWatched, st.extraSec, st.extensionUsed, st.breaksTaken, st._pushNow]);
+    pushT.current = setTimeout(flush, st.screen === 'watch' ? 15000 : 1200);
+  }, [st.queue, st.essentials, st.channels, st.playlists, st.folderIcons, st.apiKey, st.theme, st.usedSec, st.videosWatched, st.extraSec, st.extensionUsed, st.breaksTaken, st.breakEndsAt, st._pushNow]);
   React.useEffect(() => {
-    const t = setInterval(() => setSt(s => {
-      const bud = BUDGET_MIN * 60 + s.extraSec;
-      if (s.screen === 'watch') {
-        const isEss = s.essentials.some(q => q.id === s.curId);
-        if (isEss) return { ...s, sessionSec: s.sessionSec + 1 };
-        const used = s.usedSec + 1;
-        if (used >= bud) return { ...s, usedSec: bud, curId: null, sessionSec: 0, screen: 'lock', lockReason: 'time' };
-        return { ...s, usedSec: used, sessionSec: s.sessionSec + 1 };
-      }
-      if (s.screen === 'break') {
-        const left = s.breakLeft - 1;
-        if (left > 0) return { ...s, breakLeft: left };
-        const maxV = MAX_VIDEOS + (s.extensionUsed ? 1 : 0);
-        const locked = s.videosWatched >= maxV || s.usedSec >= bud;
-        return { ...s, breakLeft: 0, screen: locked ? 'lock' : 'home', lockReason: s.usedSec >= bud ? 'time' : 'count' };
-      }
-      return s;
-    }), 1000);
+    const onHide = () => { if (document.visibilityState === 'hidden' && pushT.current) flush(); };
+    document.addEventListener('visibilitychange', onHide);
+    return () => document.removeEventListener('visibilitychange', onHide);
+  }, []);
+  const lastTick = React.useRef(Date.now());
+  React.useEffect(() => {
+    const t = setInterval(() => {
+      // Measure real elapsed time: background tabs throttle timers, so counting ticks undercounts.
+      // Gaps longer than MAX_TICK_GAP mean the device slept, which isn't counted as watching.
+      const now = Date.now();
+      const dt = Math.min((now - lastTick.current) / 1000, MAX_TICK_GAP);
+      lastTick.current = now;
+      const day = dayKey();
+      if (day !== todayKey) { const old = todayKey; todayKey = day; setSt(s => rollover(s, old)); return; }
+      setSt(s => {
+        const bud = BUDGET_MIN * 60 + s.extraSec;
+        if (s.screen === 'watch') {
+          const isEss = s.essentials.some(q => q.id === s.curId);
+          if (isEss) return { ...s, sessionSec: s.sessionSec + dt };
+          const used = s.usedSec + dt;
+          if (used >= bud) return { ...s, usedSec: bud, curId: null, sessionSec: 0, screen: 'lock', lockReason: 'time' };
+          return { ...s, usedSec: used, sessionSec: s.sessionSec + dt };
+        }
+        if (s.screen === 'break') {
+          const left = Math.max(0, Math.ceil((s.breakEndsAt - now) / 1000));
+          if (left > 0) return left === s.breakLeft ? s : { ...s, breakLeft: left };
+          const maxV = MAX_VIDEOS + (s.extensionUsed ? 1 : 0);
+          const locked = s.videosWatched >= maxV || s.usedSec >= bud;
+          return { ...s, breakLeft: 0, breakEndsAt: 0, screen: locked ? 'lock' : 'home', lockReason: s.usedSec >= bud ? 'time' : 'count' };
+        }
+        return s;
+      });
+    }, 1000);
     return () => clearInterval(t);
   }, []);
   React.useEffect(() => {
@@ -232,22 +279,34 @@ function App({ sb, session, access, onSignOut }) {
   const intentReady = !!(st.intentChip || st.intentText.trim());
   const fmt = sec => Math.floor(sec / 60) + ':' + String(Math.floor(sec % 60)).padStart(2, '0');
   const headerByTab = { today: TH.sign === 'plain' ? "Today's picks" : "Today's lane", essentials: '★ VIP Lane', channels: 'Your channels', stats: 'Your week', settings: 'Settings' };
-  const week = [...Array(7)].map((_, i) => { const d = new Date(); d.setDate(d.getDate() - (6 - i)); const k = d.toISOString().slice(0, 10); const h = k === todayKey ? { min: Math.round(st.usedSec / 60) } : st.history[k]; return { label: ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()], minutes: h ? h.min : 0, active: k === todayKey }; });
-  const weekVids = Object.entries(st.history).reduce((n, [k, h]) => n + (k === todayKey ? 0 : (h.vids || 0)), st.videosWatched);
-  const weekBreaks = Object.entries(st.history).reduce((n, [k, h]) => n + (k === todayKey ? 0 : (h.breaks || 0)), st.breaksTaken);
-  const daysUnder = Object.values(st.history).filter(h => h.min <= BUDGET_MIN).length;
+  const weekDays = [...Array(7)].map((_, i) => { const d = new Date(); d.setDate(d.getDate() - (6 - i)); const k = dayKey(d); return { d, k, h: k === todayKey ? { min: Math.round(st.usedSec / 60), vids: st.videosWatched, breaks: st.breaksTaken } : st.history[k] }; });
+  const week = weekDays.map(({ d, k, h }) => ({ label: ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()], minutes: h ? h.min : 0, active: k === todayKey }));
+  const weekVids = weekDays.reduce((n, { h }) => n + ((h && h.vids) || 0), 0);
+  const weekBreaks = weekDays.reduce((n, { h }) => n + ((h && h.breaks) || 0), 0);
+  const daysUnder = weekDays.filter(({ k, h }) => h && k !== todayKey && h.min <= BUDGET_MIN).length;
   const isLocked = st.videosWatched >= maxVideos || st.usedSec >= budgetSec;
   const addPlaylist = async pid => {
     if (!st.apiKey) { setSt(s => ({ ...s, addErr: 'Playlist links need a free YouTube API key — add yours in ⚙ Settings.' })); return; }
     setSt(s => ({ ...s, adding: true, addErr: '' }));
     try {
-      const [mr, ir] = await Promise.all([
-        fetch('https://www.googleapis.com/youtube/v3/playlists?part=snippet,contentDetails&id=' + pid + '&key=' + st.apiKey),
-        fetch('https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=50&playlistId=' + pid + '&key=' + st.apiKey)
+      // The API returns 50 items per page; follow up to 4 pages (200 videos) to keep quota use small.
+      const fetchItems = async () => {
+        let all = [], token = '';
+        for (let page = 0; page < 4; page++) {
+          const r = await fetch('https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=50&playlistId=' + pid + '&key=' + st.apiKey + (token ? '&pageToken=' + token : ''));
+          const j = await r.json();
+          if (j.error) throw new Error(j.error.message || 'API error');
+          all = all.concat(j.items || []);
+          token = j.nextPageToken;
+          if (!token) break;
+        }
+        return all;
+      };
+      const [mj, rawItems] = await Promise.all([
+        fetch('https://www.googleapis.com/youtube/v3/playlists?part=snippet,contentDetails&id=' + pid + '&key=' + st.apiKey).then(r => r.json()),
+        fetchItems()
       ]);
-      const mj = await mr.json(), ij = await ir.json();
-      if (ij.error) throw new Error(ij.error.message || 'API error');
-      const items = (ij.items || []).filter(it => it.snippet && it.snippet.resourceId && it.snippet.resourceId.videoId && !['Private video', 'Deleted video'].includes(it.snippet.title)).map(it => { const v = it.snippet.resourceId.videoId; return { id: 'pl_' + pid + '_' + v, vid: v, url: 'https://www.youtube.com/watch?v=' + v, title: it.snippet.title, channel: it.snippet.videoOwnerChannelTitle || 'YouTube', thumb: 'https://i.ytimg.com/vi/' + v + '/hqdefault.jpg' }; });
+      const items = rawItems.filter(it => it.snippet && it.snippet.resourceId && it.snippet.resourceId.videoId && !['Private video', 'Deleted video'].includes(it.snippet.title)).map(it => { const v = it.snippet.resourceId.videoId; return { id: 'pl_' + pid + '_' + v, vid: v, url: 'https://www.youtube.com/watch?v=' + v, title: it.snippet.title, channel: it.snippet.videoOwnerChannelTitle || 'YouTube', thumb: 'https://i.ytimg.com/vi/' + v + '/hqdefault.jpg' }; });
       const meta = (mj.items && mj.items[0] && mj.items[0].snippet) || {};
       const pl = { id: pid, title: meta.title || 'YouTube playlist', channel: meta.channelTitle || '', count: items.length, items };
       setSt(s => ({ ...s, adding: false, videoInput: '', playlists: [pl, ...s.playlists.filter(p => p.id !== pid)], openPlaylist: pid }));
@@ -295,7 +354,7 @@ function App({ sb, session, access, onSignOut }) {
   const finishWatch = countIt => setSt(s => {
     if (curIsEss) return { ...s, curId: null, sessionSec: 0, screen: isLocked ? 'lock' : 'home' };
     if (!countIt) return { ...s, curId: null, sessionSec: 0, screen: 'home' };
-    return { ...s, curId: null, sessionSec: 0, videosWatched: s.videosWatched + 1, breaksTaken: s.breaksTaken + 1, queue: s.queue.filter(q => q.id !== s.curId), screen: 'break', breakLeft: BREAK_MIN * 60, intentChip: null, intentText: '' };
+    return { ...s, curId: null, sessionSec: 0, videosWatched: s.videosWatched + 1, breaksTaken: s.breaksTaken + 1, queue: s.queue.filter(q => q.id !== s.curId), screen: 'break', breakLeft: BREAK_MIN * 60, breakEndsAt: Date.now() + BREAK_MIN * 60000, intentChip: null, intentText: '' };
   });
   const setFolder = f => setSt(s => ({ ...s, folderOpen: false, folderInput: '', folderIcons: f && !s.folderIcons[f] ? { ...s.folderIcons, [f]: s.folderEmoji } : s.folderIcons, openFolder: s.openFolder && !s.channels.some(c => c.folder === s.openFolder && c.url !== s.folderTarget) && f !== s.openFolder ? null : s.openFolder, channels: s.channels.map(c => c.url === s.folderTarget ? { ...c, folder: f || undefined } : c) }));
   const fIcon = f => st.folderIcons[f] || '📁';
@@ -309,7 +368,7 @@ function App({ sb, session, access, onSignOut }) {
     onRemove={() => setSt(s => ({ ...s, channels: s.channels.filter(x => x.url !== c.url) }))} />;
   const Stripe = ({ h = 8, style }) => <div style={{ height: h, borderRadius: h / 2, background: STRIPE, ...style }}></div>;
   return (
-    <div data-theme={st.theme} style={{ width: 390, height: 'min(844px, calc(100vh - 48px))', margin: '24px auto', background: 'var(--surface-app)', borderRadius: 32, boxShadow: 'var(--shadow-phone)', display: 'flex', flexDirection: 'column', overflow: 'hidden', position: 'relative', fontFamily: T.body }}>
+    <Shell theme={st.theme}>
       {st.screen === 'home' && <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }} data-screen-label="Home">
         <div style={{ padding: '24px 24px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
           {TH.sign === 'plaza' && <React.Fragment>
@@ -650,7 +709,7 @@ function App({ sb, session, access, onSignOut }) {
           <Button variant="go" shape="rounded" size="lg" disabled={!st.folderInput.trim()} onClick={() => setFolder(st.folderInput.trim())}>Create</Button>
         </div>
       </BottomSheet>
-    </div>
+    </Shell>
   );
 }
 function Root() {
